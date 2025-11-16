@@ -29,3 +29,43 @@ resource "azurerm_storage_blob" "blob" {
   depends_on             = [azurerm_storage_account_static_website.static_website]
 
 }
+
+# Create log analytics workspace
+resource "azurerm_log_analytics_workspace" "log_analytics_workspace" {
+  name                = var.log_analytics_workspace_name
+  location            = azurerm_resource_group.resource_group.location
+  resource_group_name = azurerm_resource_group.resource_group.name
+  sku                 = "PerGB2018"
+  retention_in_days   = var.log_analytics_retention_in_days
+}
+
+# Configure monitor diagnostic setting
+resource "azurerm_monitor_diagnostic_setting" "monitor_diagnostic_setting" {
+  name = var.monitor_diagnostic_setting_name
+  # Attach to the BLOB service of the storage account
+  target_resource_id = "${azurerm_storage_account.storage_account.id}/blobServices/default"
+
+  # Send logs/metrics to your Log Analytics workspace
+  log_analytics_workspace_id = azurerm_log_analytics_workspace.log_analytics_workspace.id
+
+  # Logs to be collected
+
+  enabled_log {
+    category = "StorageRead"
+  }
+
+  enabled_log {
+    category = "StorageWrite"
+  }
+
+  enabled_log {
+    category = "StorageDelete"
+  }
+
+  # Metrics
+  metric {
+    category = "AllMetrics"
+    enabled  = true
+  }
+}
+
