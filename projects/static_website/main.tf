@@ -65,7 +65,6 @@ resource "azurerm_monitor_diagnostic_setting" "monitor_diagnostic_setting" {
   # Metrics
   metric {
     category = "AllMetrics"
-    enabled  = true
   }
 }
 
